@@ -47,3 +47,6 @@ jobs:
 
       - name: Build
         run: yarn build
+
+      - name: Build deployment image
+        run: docker build --tag limopti:ci .

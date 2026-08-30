@@ -27,4 +27,5 @@ export interface ApiDefinition {
   account: {
     show: typeof routes['account.show']
   }
+  health: typeof routes['health']
 }

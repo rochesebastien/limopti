@@ -55,6 +55,13 @@ est nécessaire pour les écrans d’inscription, de connexion et de compte.
 Les recherches hors du scénario Churchill → Gare affichent volontairement un
 état non pris en charge : le moteur de calcul GTFS/OTP reste à brancher.
 
+## Déploiement
+
+Le dépôt contient une image Docker de production pour Dokploy. La procédure
+complète — application GitHub, PostgreSQL, variables, domaine, santé et
+déploiements sans interruption — se trouve dans
+[`docs/deployment/dokploy.md`](docs/deployment/dokploy.md).
+
 ## Vérification
 
 ```bash
