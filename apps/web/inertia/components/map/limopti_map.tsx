@@ -1,5 +1,12 @@
-import { Layers3, LocateFixed, MapPinned, TriangleAlert } from 'lucide-react';
-import { AttributionControl, GeolocateControl, LngLatBounds, Map, NavigationControl } from 'maplibre-gl';
+import { Layers3, LocateFixed, MapPinned, RefreshCw, TriangleAlert } from 'lucide-react';
+import {
+	AttributionControl,
+	GeolocateControl,
+	LngLatBounds,
+	Map as MapLibreMap,
+	NavigationControl,
+	Popup,
+} from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 import type { MobilityCatalog } from '~/mobility';
 
@@ -12,23 +19,40 @@ export interface LimoptiMapProps {
 
 export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true, className = '' }: LimoptiMapProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const mapRef = useRef<Map | null>(null);
+	const mapRef = useRef<MapLibreMap | null>(null);
 	const [ready, setReady] = useState(false);
 	const [failed, setFailed] = useState(false);
+	const [attempt, setAttempt] = useState(0);
 
 	useEffect(() => {
 		if (!containerRef.current || mapRef.current) {
 			return;
 		}
 
-		const map = new Map({
-			container: containerRef.current,
-			style: import.meta.env.VITE_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/positron',
-			center: [1.2635, 45.834],
-			zoom: 13.6,
-			attributionControl: false,
-		});
+		setReady(false);
+		setFailed(false);
+
+		let map: MapLibreMap;
+
+		try {
+			map = new MapLibreMap({
+				container: containerRef.current,
+				style: import.meta.env.VITE_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/positron',
+				center: [1.2635, 45.834],
+				zoom: 13.6,
+				attributionControl: false,
+				dragRotate: false,
+				pitchWithRotate: false,
+				touchPitch: false,
+			});
+		} catch {
+			setFailed(true);
+			return;
+		}
 		mapRef.current = map;
+		const resizeObserver = new ResizeObserver(() => map.resize());
+		resizeObserver.observe(containerRef.current);
+		window.requestAnimationFrame(() => map.resize());
 
 		map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
 		map.addControl(
@@ -48,6 +72,7 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 
 		map.on('load', () => {
 			window.clearTimeout(timeout);
+			setFailed(false);
 			const routeCoordinates = mode === 'journey' && showJourneyRoute ? catalog.selectedRouteGeometry : [];
 
 			if (routeCoordinates.length >= 2) {
@@ -70,7 +95,7 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 					type: 'line',
 					source: 'selected-route',
 					layout: { 'line-cap': 'round', 'line-join': 'round' },
-					paint: { 'line-color': '#0B6B57', 'line-width': 6 },
+					paint: { 'line-color': '#F97316', 'line-width': 6 },
 				});
 			}
 
@@ -101,7 +126,7 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 				id: 'transit-stops',
 				type: 'circle',
 				source: 'transit-stops',
-				paint: { 'circle-color': '#0B6B57', 'circle-radius': 3.5 },
+				paint: { 'circle-color': '#F97316', 'circle-radius': 3.5 },
 			});
 			map.addLayer({
 				id: 'transit-stop-labels',
@@ -116,7 +141,26 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 					'text-anchor': 'top',
 					'text-allow-overlap': false,
 				},
-				paint: { 'text-color': '#10211B', 'text-halo-color': '#ffffff', 'text-halo-width': 2 },
+				paint: { 'text-color': '#171717', 'text-halo-color': '#ffffff', 'text-halo-width': 2 },
+			});
+			map.on('mouseenter', 'transit-stops', () => {
+				map.getCanvas().style.cursor = 'pointer';
+			});
+			map.on('mouseleave', 'transit-stops', () => {
+				map.getCanvas().style.cursor = '';
+			});
+			map.on('click', 'transit-stops', (event) => {
+				const feature = event.features?.[0];
+				const coordinates = feature?.geometry.type === 'Point' ? feature.geometry.coordinates : undefined;
+
+				if (!feature || !coordinates) {
+					return;
+				}
+
+				new Popup({ closeButton: false, offset: 10 })
+					.setLngLat([coordinates[0]!, coordinates[1]!])
+					.setText(String(feature.properties?.name ?? 'Arrêt TCL'))
+					.addTo(map);
 			});
 
 			if (routeCoordinates.length >= 2) {
@@ -141,7 +185,7 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 					type: 'circle',
 					source: 'journey-endpoints',
 					paint: {
-						'circle-color': ['match', ['get', 'type'], 'origin', '#C8F169', '#10211B'],
+						'circle-color': ['match', ['get', 'type'], 'origin', '#F97316', '#171717'],
 						'circle-radius': 8,
 						'circle-stroke-color': '#ffffff',
 						'circle-stroke-width': 3,
@@ -193,16 +237,17 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 
 		return () => {
 			window.clearTimeout(timeout);
+			resizeObserver.disconnect();
 			map.remove();
 			mapRef.current = null;
 		};
-	}, [catalog, mode, showJourneyRoute]);
+	}, [attempt, catalog, mode, showJourneyRoute]);
 
 	return (
 		<div className={`bg-surface-muted relative isolate overflow-hidden ${className}`}>
 			<section
 				ref={containerRef}
-				className="absolute inset-0"
+				className="absolute inset-0 touch-none"
 				aria-label={mode === 'traffic' ? 'Carte des perturbations et de la circulation' : 'Carte du trajet sélectionné'}
 			/>
 
@@ -217,7 +262,7 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 				</div>
 				<div className="bg-surface/95 text-muted shadow-card hidden items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold backdrop-blur sm:flex">
 					<LocateFixed className="size-4" aria-hidden="true" />
-					Limoges
+					Faites glisser pour explorer
 				</div>
 			</div>
 
@@ -240,9 +285,17 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 						<div>
 							<p className="text-ink text-sm font-bold">La carte ne répond pas</p>
 							<p className="text-muted mt-1 text-xs">
-								Les informations du trajet restent disponibles dans le panneau. Vérifiez votre connexion puis rechargez
-								la page.
+								Les informations du trajet restent disponibles dans le panneau. Vous pouvez relancer uniquement la
+								carte.
 							</p>
+							<button
+								type="button"
+								onClick={() => setAttempt((current) => current + 1)}
+								className="border-border bg-surface text-ink hover:bg-surface-muted mt-3 inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-bold shadow-sm"
+							>
+								<RefreshCw className="size-3.5" aria-hidden="true" />
+								Réessayer
+							</button>
 						</div>
 					</div>
 				</div>

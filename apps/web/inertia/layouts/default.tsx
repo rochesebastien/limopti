@@ -8,7 +8,7 @@ import { toast, Toaster } from 'sonner';
 function Brand() {
 	return (
 		<span className="flex items-center gap-2.5">
-			<span className="bg-brand-lime text-brand-navy grid size-9 place-items-center rounded-xl font-black shadow-sm">
+			<span className="bg-accent text-accent-ink grid size-9 place-items-center rounded-lg font-black shadow-sm">
 				L
 			</span>
 			<span className="text-ink text-lg font-black tracking-[-0.035em]">Limopti</span>
@@ -18,7 +18,7 @@ function Brand() {
 
 function DesktopNavigation({ url }: { url: string }) {
 	const linkClass = (active: boolean) =>
-		`rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+		`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
 			active ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-surface-muted hover:text-ink'
 		}`;
 
@@ -115,7 +115,7 @@ export default function Layout({ children }: { children: ReactElement }) {
 
 	return (
 		<div className="bg-canvas text-ink min-h-dvh">
-			<header className="border-border bg-surface/95 sticky top-0 z-50 border-b backdrop-blur-xl">
+			<header className="border-border bg-surface/90 sticky top-0 z-50 border-b backdrop-blur-xl">
 				<div className="mx-auto flex h-16 max-w-[1600px] items-center gap-7 px-4 sm:px-6">
 					<Link route="home" aria-label="Accueil Limopti" className="shrink-0">
 						<Brand />
