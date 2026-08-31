@@ -31,5 +31,8 @@
   "engines": {
     "node": ">=24.0.0"
   },
+  "resolutions": {
+    "jsonschema": "1.4.1"
+  },
   "packageManager": "yarn@4.17.0"
 }
