@@ -18,6 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: limopti
+          POSTGRES_USER: limopti
+          POSTGRES_PASSWORD: limopti
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U limopti -d limopti"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,16 +66,37 @@ jobs:
       - name: Build deployment image
         run: docker build --tag limopti:ci .
 
-      - name: Smoke test deployment command loader
+      - name: Smoke test deployment container
         run: |
-          docker run --rm \
-            --entrypoint node \
+          docker run --detach \
+            --name limopti-ci-runtime \
+            --network host \
             --env NODE_ENV=production \
             --env HOST=0.0.0.0 \
             --env PORT=3333 \
             --env LOG_LEVEL=info \
             --env APP_KEY=limopti-ci-runtime-key \
             --env APP_URL=http://localhost:3333 \
-            --env DATABASE_URL=postgres://app:app@localhost:5432/limopti \
+            --env DATABASE_URL=postgres://limopti:limopti@127.0.0.1:5432/limopti \
             --env SESSION_DRIVER=cookie \
-            limopti:ci ace list
+            limopti:ci
+
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3333/healthz; then
+              exit 0
+            fi
+
+            if [ "$(docker inspect --format '{{.State.Running}}' limopti-ci-runtime)" != "true" ]; then
+              docker logs limopti-ci-runtime
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          docker logs limopti-ci-runtime
+          exit 1
+
+      - name: Stop deployment container
+        if: always()
+        run: docker rm --force limopti-ci-runtime || true

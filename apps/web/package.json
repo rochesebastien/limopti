@@ -52,7 +52,8 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "reflect-metadata": "^0.2.2",
-    "sonner": "^2.0.8"
+    "sonner": "^2.0.8",
+    "youch": "^4.1.1"
   },
   "devDependencies": {
     "@adonisjs/assembler": "8.4.0",
@@ -76,8 +77,7 @@
     "playwright": "^1.62.1",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "youch": "^4.1.1"
+    "vite": "catalog:"
   },
   "hotHook": {
     "boundaries": [
