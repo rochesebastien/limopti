@@ -32,16 +32,23 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 		setReady(false);
 		setFailed(false);
 
-		const map = new MapLibreMap({
-			container: containerRef.current,
-			style: import.meta.env.VITE_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/positron',
-			center: [1.2635, 45.834],
-			zoom: 13.6,
-			attributionControl: false,
-			dragRotate: false,
-			pitchWithRotate: false,
-			touchPitch: false,
-		});
+		let map: MapLibreMap;
+
+		try {
+			map = new MapLibreMap({
+				container: containerRef.current,
+				style: import.meta.env.VITE_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/positron',
+				center: [1.2635, 45.834],
+				zoom: 13.6,
+				attributionControl: false,
+				dragRotate: false,
+				pitchWithRotate: false,
+				touchPitch: false,
+			});
+		} catch {
+			setFailed(true);
+			return;
+		}
 		mapRef.current = map;
 		const resizeObserver = new ResizeObserver(() => map.resize());
 		resizeObserver.observe(containerRef.current);
