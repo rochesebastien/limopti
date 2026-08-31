@@ -9,26 +9,20 @@ export default function Login() {
 		<>
 			<Head title="Connexion" />
 			<AuthShell
-				eyebrow="Content de vous revoir"
-				title="Retrouvez vos trajets partout."
-				description="Connectez-vous pour préparer la synchronisation de vos favoris et de vos préférences Limopti."
+				title="Connexion"
+				description="Saisissez vos identifiants pour continuer."
 				footer={
 					<>
 						Pas encore de compte ?{' '}
-						<Link route="new_account.create" className="text-accent hover:text-accent-hover font-semibold">
+						<Link route="new_account.create" className="text-ink underline underline-offset-2 hover:no-underline">
 							Créer un compte
 						</Link>
 					</>
 				}
 			>
-				<div className="mb-7">
-					<h2 className="text-ink text-2xl font-bold tracking-tight">Connexion</h2>
-					<p className="text-muted mt-2 text-sm">Saisissez vos identifiants pour continuer.</p>
-				</div>
-
 				<Form route="session.store">
 					{({ errors, processing }) => (
-						<div className="space-y-5">
+						<div className="space-y-4">
 							<Field label="Email" error={errors.email} type="email" name="email" autoComplete="username" required />
 
 							<Field

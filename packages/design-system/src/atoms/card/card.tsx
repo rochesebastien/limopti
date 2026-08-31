@@ -3,13 +3,13 @@ import { type ComponentPropsWithRef } from 'react';
 import { tv, type VariantProps } from 'tailwind-variants';
 
 const card = tv({
-	base: 'rounded-card border-border bg-surface shadow-card border',
+	base: 'rounded-card border-border bg-surface border',
 	variants: {
 		padding: {
 			none: '',
 			small: 'p-4',
-			medium: 'p-6',
-			large: 'p-8',
+			medium: 'p-5',
+			large: 'p-7',
 		},
 	},
 	defaultVariants: {

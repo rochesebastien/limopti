@@ -1,35 +1,23 @@
-import { Card } from '@limopti/design-system/card';
 import { type ReactNode } from 'react';
 
 interface AuthShellProps {
-	eyebrow: string;
 	title: string;
 	description: string;
 	children: ReactNode;
 	footer: ReactNode;
 }
 
-export function AuthShell({ eyebrow, title, description, children, footer }: AuthShellProps) {
+export function AuthShell({ title, description, children, footer }: AuthShellProps) {
 	return (
-		<main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_28rem] lg:px-8 lg:py-16">
-			<section className="max-w-xl lg:pr-10">
-				<p className="text-accent mb-4 text-sm font-semibold tracking-wide uppercase">{eyebrow}</p>
-				<h1 className="text-ink text-4xl leading-tight font-bold tracking-tight sm:text-5xl">{title}</h1>
-				<p className="text-muted mt-5 max-w-lg text-lg leading-8">{description}</p>
+		<main className="mx-auto flex w-full max-w-sm flex-col justify-center px-4 py-16">
+			<header className="mb-6">
+				<h1 className="text-ink text-xl font-semibold">{title}</h1>
+				<p className="text-muted mt-1 text-sm">{description}</p>
+			</header>
 
-				<ul className="text-muted marker:text-accent mt-8 hidden space-y-3 text-sm lg:block lg:list-disc lg:pl-5">
-					<li>Favoris fondés sur vos habitudes, pas sur une course périssable</li>
-					<li>Sources, fraîcheur et niveau de confiance toujours visibles</li>
-					<li>Interface accessible sur ordinateur comme sur mobile</li>
-				</ul>
-			</section>
+			{children}
 
-			<Card asChild className="sm:p-8">
-				<section>
-					{children}
-					<div className="border-border text-muted mt-7 border-t pt-6 text-center text-sm">{footer}</div>
-				</section>
-			</Card>
+			<p className="text-muted mt-6 text-center text-sm">{footer}</p>
 		</main>
 	);
 }

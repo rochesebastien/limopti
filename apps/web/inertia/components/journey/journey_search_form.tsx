@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Button } from '@limopti/design-system/button';
 import { Input } from '@limopti/design-system/input';
-import { ArrowDownUp, CalendarClock, LocateFixed, MapPin, Search } from 'lucide-react';
+import { ArrowDownUp, LocateFixed } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import type { MobilityCatalog } from '~/mobility';
 
@@ -9,10 +9,7 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 	const [origin, setOrigin] = useState(catalog.search.origin);
 	const [destination, setDestination] = useState(catalog.search.destination);
 	const [locating, setLocating] = useState(false);
-	const [locationError, setLocationError] = useState<string>();
-	const [locationNotice, setLocationNotice] = useState<string>();
-
-	const placeNames = catalog.places.map((place) => place.name);
+	const [locationMessage, setLocationMessage] = useState<{ tone: 'error' | 'info'; text: string }>();
 
 	useEffect(() => {
 		setOrigin(catalog.search.origin);
@@ -30,11 +27,10 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 	}
 
 	function locate() {
-		setLocationError(undefined);
-		setLocationNotice(undefined);
+		setLocationMessage(undefined);
 
 		if (!navigator.geolocation) {
-			setLocationError('La géolocalisation n’est pas disponible sur cet appareil.');
+			setLocationMessage({ tone: 'error', text: 'Géolocalisation indisponible sur cet appareil.' });
 			return;
 		}
 
@@ -57,11 +53,11 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 				});
 
 				setOrigin(nearestPlace.name);
-				setLocationNotice(`Départ rapproché du point connu « ${nearestPlace.name} ».`);
+				setLocationMessage({ tone: 'info', text: `Départ placé sur « ${nearestPlace.name} ».` });
 				setLocating(false);
 			},
 			() => {
-				setLocationError('Position refusée ou indisponible. Saisissez un lieu à la place.');
+				setLocationMessage({ tone: 'error', text: 'Position indisponible. Saisissez un lieu.' });
 				setLocating(false);
 			},
 			{ enableHighAccuracy: true, timeout: 8_000 },
@@ -69,11 +65,11 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 	}
 
 	return (
-		<form onSubmit={submit} className="space-y-4" aria-label="Rechercher un itinéraire">
-			<div className="relative space-y-2">
+		<form onSubmit={submit} className="space-y-3" aria-label="Rechercher un itinéraire">
+			<div className="border-border bg-surface rounded-card relative border">
 				<div className="relative">
 					<span className="absolute inset-y-0 left-3.5 flex items-center" aria-hidden="true">
-						<span className="bg-brand-lime ring-surface size-2.5 rounded-full ring-2" />
+						<span className="border-muted size-2 rounded-full border-2" />
 					</span>
 					<label className="sr-only" htmlFor="journey-origin">
 						Départ
@@ -85,15 +81,15 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 						onChange={(event) => setOrigin(event.target.value)}
 						list="limopti-places"
 						inputSize="large"
-						className="pr-12 pl-10 font-semibold"
+						className="rounded-b-none border-0 border-b pr-11 pl-9"
 						autoComplete="off"
-						placeholder="Lieu de départ"
+						placeholder="Départ"
 						required
 					/>
 					<button
 						type="button"
 						onClick={locate}
-						className="text-muted hover:bg-surface-muted hover:text-accent absolute inset-y-1 right-1 grid aspect-square place-items-center rounded-xl transition-colors"
+						className="text-faint hover:text-ink absolute inset-y-0 right-9 grid w-8 place-items-center transition-colors"
 						aria-label="Utiliser ma position comme départ"
 						disabled={locating}
 					>
@@ -101,13 +97,10 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 					</button>
 				</div>
 
-				<div
-					className="border-border absolute top-[2.65rem] left-[1.08rem] h-4 border-l-2 border-dotted"
-					aria-hidden="true"
-				/>
-
 				<div className="relative">
-					<MapPin className="text-accent absolute top-1/2 left-3 size-4 -translate-y-1/2" aria-hidden="true" />
+					<span className="absolute inset-y-0 left-3.5 flex items-center" aria-hidden="true">
+						<span className="bg-accent size-2 rounded-full" />
+					</span>
 					<label className="sr-only" htmlFor="journey-destination">
 						Destination
 					</label>
@@ -118,48 +111,42 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 						onChange={(event) => setDestination(event.target.value)}
 						list="limopti-places"
 						inputSize="large"
-						className="pr-12 pl-10 font-semibold"
+						className="rounded-t-none border-0 pr-11 pl-9"
 						autoComplete="off"
 						placeholder="Destination"
 						required
 					/>
-					<button
-						type="button"
-						onClick={swapPlaces}
-						className="border-border bg-surface text-muted hover:text-accent absolute top-1/2 right-1.5 grid size-9 -translate-y-1/2 place-items-center rounded-xl border shadow-sm transition-colors"
-						aria-label="Inverser le départ et la destination"
-					>
-						<ArrowDownUp className="size-4" aria-hidden="true" />
-					</button>
 				</div>
+
+				<button
+					type="button"
+					onClick={swapPlaces}
+					className="border-border bg-surface text-muted hover:text-ink absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-md border transition-colors"
+					aria-label="Inverser le départ et la destination"
+				>
+					<ArrowDownUp className="size-3.5" aria-hidden="true" />
+				</button>
 			</div>
 
 			<datalist id="limopti-places">
-				{placeNames.map((name) => (
-					<option key={name} value={name}>
-						{name}
+				{catalog.places.map((place) => (
+					<option key={place.name} value={place.name}>
+						{place.name}
 					</option>
 				))}
 			</datalist>
 
-			{locationError ? (
-				<p className="text-rose text-xs font-semibold" role="alert">
-					{locationError}
+			{locationMessage ? (
+				<p
+					className={`text-xs ${locationMessage.tone === 'error' ? 'text-critical' : 'text-muted'}`}
+					role={locationMessage.tone === 'error' ? 'alert' : undefined}
+				>
+					{locationMessage.text}
 				</p>
 			) : null}
-			{locationNotice ? <p className="text-accent text-xs font-semibold">{locationNotice}</p> : null}
 
-			<div className="flex flex-wrap items-center gap-2">
-				<span className="bg-accent-soft text-accent inline-flex h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold">
-					<CalendarClock className="size-4" aria-hidden="true" />
-					Départ de démonstration · {catalog.search.departureAt.slice(11, 16)}
-				</span>
-				<span className="text-muted text-xs font-medium">Exemple disponible : Churchill → Gare</span>
-			</div>
-
-			<Button type="submit" size="large" className="w-full gap-2">
-				<Search className="size-5" aria-hidden="true" />
-				Rechercher un trajet
+			<Button type="submit" size="large" className="w-full">
+				Rechercher
 			</Button>
 		</form>
 	);

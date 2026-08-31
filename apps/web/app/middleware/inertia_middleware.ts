@@ -1,4 +1,5 @@
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware';
+import { authEnabled } from '#app/features';
 import UserTransformer from '#app/transformers/user_transformer';
 import type { HttpContext } from '@adonisjs/core/http';
 import type { NextFn } from '@adonisjs/core/types/http';
@@ -22,7 +23,8 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 		 */
 		return {
 			errors: ctx.inertia.always(this.getValidationErrors(ctx)),
-			user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
+			user: ctx.inertia.always(authEnabled && auth?.user ? UserTransformer.transform(auth.user) : undefined),
+			authEnabled: ctx.inertia.always(authEnabled),
 		};
 	}
 

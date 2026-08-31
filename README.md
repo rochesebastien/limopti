@@ -17,7 +17,8 @@ cartographiée sans masquer la fraîcheur des données.
 - favoris enregistrés localement sous forme d’intention de trajet ;
 - vue dédiée aux perturbations et au trafic ;
 - page Sources détaillant licences, validité et limites de chaque donnée ;
-- authentification Adonis prête pour la synchronisation future des favoris.
+- authentification Adonis prête pour la synchronisation future des favoris,
+  actuellement désactivée : l’application est en accès libre.
 
 ## Stack
 
@@ -50,10 +51,17 @@ yarn dev
 L’application est servie sur <http://localhost:3333> et Storybook sur
 <http://localhost:6006> avec `yarn storybook`.
 
-Le planificateur public fonctionne en mode démonstration sans base. PostgreSQL
-est nécessaire pour les écrans d’inscription, de connexion et de compte.
+Le planificateur public fonctionne en mode démonstration sans base.
 Les recherches hors du scénario Churchill → Gare affichent volontairement un
 état non pris en charge : le moteur de calcul GTFS/OTP reste à brancher.
+
+### Accès libre
+
+`AUTH_ENABLED=false` (valeur par défaut) place l’application en accès libre :
+toutes les pages sont consultables sans compte, les écrans de connexion,
+d’inscription et de compte redirigent vers l’accueil, et aucune requête base de
+données n’est émise. Le code d’identité reste intact ; repasser la variable à
+`true` (avec PostgreSQL disponible) restaure la connexion.
 
 ## Déploiement
 

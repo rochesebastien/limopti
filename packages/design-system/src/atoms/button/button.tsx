@@ -3,16 +3,17 @@ import { type ComponentPropsWithRef } from 'react';
 import { tv, type VariantProps } from 'tailwind-variants';
 
 const button = tv({
-	base: 'rounded-control focus-visible:ring-accent/40 focus-visible:ring-offset-surface inline-flex cursor-pointer items-center justify-center font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+	base: 'rounded-control inline-flex cursor-pointer items-center justify-center gap-2 font-medium whitespace-nowrap transition-colors outline-none disabled:pointer-events-none disabled:opacity-40',
 	variants: {
 		intent: {
-			primary: 'bg-accent text-accent-ink hover:bg-accent-hover shadow-sm',
-			secondary: 'border-border bg-surface text-ink hover:bg-surface-muted border shadow-sm',
+			primary: 'bg-solid text-solid-ink hover:bg-solid-hover',
+			secondary: 'border-border bg-surface text-ink hover:bg-surface-muted hover:border-border-strong border',
+			ghost: 'text-muted hover:bg-surface-muted hover:text-ink',
 		},
 		size: {
-			small: 'h-9 px-3 text-sm',
-			medium: 'h-10 px-4 text-sm',
-			large: 'h-12 px-5 text-base',
+			small: 'h-8 px-3 text-[0.8125rem]',
+			medium: 'h-9 px-3.5 text-sm',
+			large: 'h-11 px-4 text-sm',
 		},
 	},
 	defaultVariants: {
@@ -57,7 +58,7 @@ export function Button({
 			{loading && (
 				<span
 					aria-hidden="true"
-					className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+					className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
 				/>
 			)}
 			{children}
