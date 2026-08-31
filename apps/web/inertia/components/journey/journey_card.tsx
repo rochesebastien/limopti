@@ -44,7 +44,7 @@ export function JourneyCard({ journey, selected, onSelect }: JourneyCardProps) {
 									<span className="text-border" aria-hidden="true">
 										•
 									</span>
-									<LineBadge name={busLeg.line} color={busLeg.color ?? '#0B6B57'} size="small" />
+									<LineBadge name={busLeg.line} color={busLeg.color ?? '#F97316'} size="small" />
 									<span className="text-ink text-xs font-bold">vers {busLeg.headsign}</span>
 								</>
 							) : (

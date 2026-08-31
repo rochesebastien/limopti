@@ -29,12 +29,13 @@ export default function LinesIndex({ catalog }: PageProps) {
 		<>
 			<Head title="Lignes TCL" />
 			<main className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
-				<header className="grid gap-6 md:grid-cols-[1fr_340px] md:items-end">
+				<header className="border-border grid gap-6 border-b pb-7 md:grid-cols-[1fr_340px] md:items-end">
 					<div>
 						<p className="text-accent text-xs font-black tracking-[0.16em] uppercase">Réseau TCL</p>
-						<h1 className="text-ink mt-2 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Lignes du prototype</h1>
+						<h1 className="text-ink mt-2 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Toutes les lignes TCL</h1>
 						<p className="text-muted mt-3 max-w-2xl text-sm leading-6 sm:text-base">
-							Explorez un extrait représentatif du réseau TCL et son état connu dans Limopti.
+							Explorez les {catalog.lines.length} lignes du flux GTFS officiel en vigueur, avec leurs terminus et leurs
+							couleurs réseau.
 						</p>
 					</div>
 
@@ -63,7 +64,7 @@ export default function LinesIndex({ catalog }: PageProps) {
 						<h2 id="line-list-title" className="text-ink text-lg font-black">
 							{filteredLines.length} lignes affichées
 						</h2>
-						<span className="text-muted text-xs">Couleurs issues du GTFS</span>
+						<span className="text-muted text-xs">Catalogue GTFS complet · 11 août 2026</span>
 					</div>
 
 					{filteredLines.length ? (
@@ -88,7 +89,7 @@ export default function LinesIndex({ catalog }: PageProps) {
 																Service théorique normal
 															</span>
 														)}
-														<span className="text-muted text-[0.68rem] font-semibold">Extrait GTFS</span>
+														<span className="text-muted text-[0.68rem] font-semibold">GTFS TCL</span>
 													</div>
 												</div>
 											</div>

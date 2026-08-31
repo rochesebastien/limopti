@@ -14,6 +14,17 @@ test.group('MobilityCatalogQuery', () => {
 		assert.equal(catalog.sources[0].license, 'ODbL 1.0');
 	});
 
+	test('exposes the complete TCL route catalog from the current dedicated feed', ({ assert }) => {
+		const catalog = new MobilityCatalogQuery().execute();
+
+		assert.lengthOf(catalog.lines, 47);
+		assert.includeMembers(
+			catalog.lines.map((line) => line.shortName),
+			['1', '5', '11', 'AERO', 'N1', 'D10'],
+		);
+		assert.equal(catalog.lines.find((line) => line.shortName === 'AERO')?.color, '#144390');
+	});
+
 	test('does not attach the Churchill fixture to an unsupported search', ({ assert }) => {
 		const catalog = new MobilityCatalogQuery().execute({
 			origin: '  Mairie de Limoges ',

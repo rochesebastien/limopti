@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react';
 import { Button } from '@limopti/design-system/button';
 import { Input } from '@limopti/design-system/input';
 import { ArrowDownUp, CalendarClock, LocateFixed, MapPin, Search } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import type { MobilityCatalog } from '~/mobility';
 
 export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
@@ -14,13 +14,14 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 
 	const placeNames = catalog.places.map((place) => place.name);
 
+	useEffect(() => {
+		setOrigin(catalog.search.origin);
+		setDestination(catalog.search.destination);
+	}, [catalog.search.destination, catalog.search.origin]);
+
 	function submit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		router.get(
-			'/',
-			{ from: origin, to: destination },
-			{ preserveScroll: true, preserveState: true, only: ['catalog'] },
-		);
+		router.get('/', { from: origin.trim(), to: destination.trim() }, { preserveScroll: true, only: ['catalog'] });
 	}
 
 	function swapPlaces() {
@@ -86,6 +87,8 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 						inputSize="large"
 						className="pr-12 pl-10 font-semibold"
 						autoComplete="off"
+						placeholder="Lieu de départ"
+						required
 					/>
 					<button
 						type="button"
@@ -99,7 +102,7 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 				</div>
 
 				<div
-					className="absolute top-[2.65rem] left-[1.08rem] h-4 border-l-2 border-dotted border-[#8ca096]"
+					className="border-border absolute top-[2.65rem] left-[1.08rem] h-4 border-l-2 border-dotted"
 					aria-hidden="true"
 				/>
 
@@ -117,6 +120,8 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 						inputSize="large"
 						className="pr-12 pl-10 font-semibold"
 						autoComplete="off"
+						placeholder="Destination"
+						required
 					/>
 					<button
 						type="button"
