@@ -84,7 +84,6 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 						className="rounded-b-none border-0 border-b pr-11 pl-9"
 						autoComplete="off"
 						placeholder="Départ"
-						required
 					/>
 					<button
 						type="button"
@@ -114,7 +113,6 @@ export function JourneySearchForm({ catalog }: { catalog: MobilityCatalog }) {
 						className="rounded-t-none border-0 pr-11 pl-9"
 						autoComplete="off"
 						placeholder="Destination"
-						required
 					/>
 				</div>
 

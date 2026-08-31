@@ -1,4 +1,4 @@
-import { MapPinned, RefreshCw, WifiOff } from 'lucide-react';
+import { MapPinned } from 'lucide-react';
 import {
 	AttributionControl,
 	GeolocateControl,
@@ -16,8 +16,8 @@ import type { MobilityCatalog } from '~/mobility';
 /**
  * MapLibre resolves its worker from `import.meta.url`, which points at the
  * bundled chunk — a location where the worker file does not exist, so it 404s
- * and the map renders nothing but its background. Vite's `?worker&url` emits a
- * real, dependency-resolved worker asset and hands us its URL, which works in
+ * and the map renders nothing at all. Vite's `?worker&url` emits a real,
+ * dependency-resolved worker asset and hands us its URL, which works in
  * development and in the production build alike.
  */
 setWorkerUrl(maplibreWorkerUrl);
@@ -29,7 +29,11 @@ export interface LimoptiMapProps {
 	className?: string;
 }
 
-const BASEMAP_TIMEOUT_MS = 6_000;
+/** Place W. Churchill / centre-ville, used whenever there is no itinerary to frame. */
+const LIMOGES_CENTER: [number, number] = [1.2615, 45.8315];
+const LIMOGES_ZOOM = 13.4;
+
+const TILE_URL = import.meta.env.VITE_MAP_TILES_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 function readToken(name: string, fallback: string) {
 	if (typeof window === 'undefined') {
@@ -42,41 +46,38 @@ function readToken(name: string, fallback: string) {
 }
 
 /**
- * Style used when the remote basemap cannot be reached. It carries no network
- * dependency, so the map still initialises and Limopti can draw its own data
- * (route, stops, traffic) on top of a plain background instead of showing an
- * empty panel.
+ * OpenStreetMap raster tiles, declared inline. Because the style is a local
+ * object rather than a URL, MapLibre never has to fetch it: the map always
+ * initialises, `load` always fires, and Limopti's own layers are drawn even if
+ * individual tiles are slow or unreachable.
  */
-function offlineStyle(): StyleSpecification {
+function osmStyle(): StyleSpecification {
 	return {
 		version: 8,
-		sources: {},
+		sources: {
+			osm: {
+				type: 'raster',
+				tiles: [TILE_URL],
+				tileSize: 256,
+				minzoom: 0,
+				maxzoom: 19,
+				attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+			},
+		},
 		layers: [
 			{
-				id: 'offline-background',
+				id: 'osm-background',
 				type: 'background',
 				paint: { 'background-color': readToken('--color-surface-muted', '#fafafa') },
 			},
+			{ id: 'osm', type: 'raster', source: 'osm' },
 		],
 	};
-}
-
-async function loadBasemapStyle(signal: AbortSignal) {
-	const url = import.meta.env.VITE_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/positron';
-	const response = await fetch(url, { signal });
-
-	if (!response.ok) {
-		throw new Error(`Basemap responded with ${response.status}`);
-	}
-
-	return (await response.json()) as StyleSpecification;
 }
 
 export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true, className = '' }: LimoptiMapProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [ready, setReady] = useState(false);
-	const [basemapAvailable, setBasemapAvailable] = useState(true);
-	const [attempt, setAttempt] = useState(0);
 
 	useEffect(() => {
 		const container = containerRef.current;
@@ -85,87 +86,47 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 			return;
 		}
 
-		let map: MapLibreMap | undefined;
-		let disposed = false;
-		let resizeObserver: ResizeObserver | undefined;
-		const controller = new AbortController();
-		const timeout = window.setTimeout(() => controller.abort(), BASEMAP_TIMEOUT_MS);
-
 		setReady(false);
 
-		/**
-		 * The basemap is fetched before the map is created so that MapLibre always
-		 * receives a style object. A style *object* always resolves, which
-		 * guarantees the `load` event fires and Limopti's own layers get drawn even
-		 * when the tile provider is unreachable.
-		 */
-		loadBasemapStyle(controller.signal)
-			.then((style) => ({ style, available: true }))
-			.catch(() => ({ style: offlineStyle(), available: false }))
-			.then(({ style, available }) => {
-				window.clearTimeout(timeout);
+		const map = new MapLibreMap({
+			container,
+			style: osmStyle(),
+			center: LIMOGES_CENTER,
+			zoom: LIMOGES_ZOOM,
+			attributionControl: false,
+			dragRotate: false,
+			pitchWithRotate: false,
+			touchPitch: false,
+		});
 
-				if (disposed) {
-					return;
-				}
+		/** A missing tile must not tear the map down; the layers stay readable. */
+		map.on('error', () => {});
 
-				setBasemapAvailable(available);
-				map = new MapLibreMap({
-					container,
-					style,
-					center: [1.2635, 45.834],
-					zoom: 13.6,
-					attributionControl: false,
-					dragRotate: false,
-					pitchWithRotate: false,
-					touchPitch: false,
-				});
+		const resizeObserver = new ResizeObserver(() => map.resize());
+		resizeObserver.observe(container);
 
-				/**
-				 * Individual tile or glyph failures must not tear the map down: the
-				 * Limopti layers stay readable without them.
-				 */
-				map.on('error', () => {});
+		map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
+		map.addControl(
+			new GeolocateControl({
+				positionOptions: { enableHighAccuracy: true },
+				trackUserLocation: true,
+			}),
+			'bottom-right',
+		);
+		map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
 
-				resizeObserver = new ResizeObserver(() => map?.resize());
-				resizeObserver.observe(container);
-
-				map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
-				map.addControl(
-					new GeolocateControl({
-						positionOptions: { enableHighAccuracy: true },
-						trackUserLocation: true,
-					}),
-					'bottom-right',
-				);
-
-				if (available) {
-					map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
-				}
-
-				map.on('load', () => {
-					if (disposed || !map) {
-						return;
-					}
-
-					/**
-					 * Resize before fitting bounds so the framing is computed against
-					 * the container's real dimensions.
-					 */
-					map.resize();
-					drawCatalogLayers(map, { catalog, mode, showJourneyRoute, labelled: Boolean(style.glyphs) });
-					setReady(true);
-				});
-			});
+		map.on('load', () => {
+			/** Resize first so the framing is computed against the real dimensions. */
+			map.resize();
+			drawCatalogLayers(map, { catalog, mode, showJourneyRoute });
+			setReady(true);
+		});
 
 		return () => {
-			disposed = true;
-			window.clearTimeout(timeout);
-			controller.abort();
-			resizeObserver?.disconnect();
-			map?.remove();
+			resizeObserver.disconnect();
+			map.remove();
 		};
-	}, [attempt, catalog, mode, showJourneyRoute]);
+	}, [catalog, mode, showJourneyRoute]);
 
 	return (
 		<div className={`bg-surface-muted relative isolate overflow-hidden ${className}`}>
@@ -186,23 +147,6 @@ export function LimoptiMap({ catalog, mode = 'journey', showJourneyRoute = true,
 					<span className="sr-only">Chargement de la carte…</span>
 				</div>
 			) : null}
-
-			{ready && !basemapAvailable ? (
-				<div className="absolute inset-x-3 bottom-3 z-30 flex justify-center">
-					<output className="border-border bg-surface/90 text-muted flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs backdrop-blur">
-						<WifiOff className="size-3.5 shrink-0" aria-hidden="true" />
-						Fond de carte indisponible
-						<button
-							type="button"
-							onClick={() => setAttempt((current) => current + 1)}
-							className="text-ink hover:text-accent ml-1 inline-flex items-center gap-1 font-medium transition-colors"
-						>
-							<RefreshCw className="size-3" aria-hidden="true" />
-							Réessayer
-						</button>
-					</output>
-				</div>
-			) : null}
 		</div>
 	);
 }
@@ -211,10 +155,9 @@ interface DrawOptions {
 	catalog: MobilityCatalog;
 	mode: 'journey' | 'traffic';
 	showJourneyRoute: boolean;
-	labelled: boolean;
 }
 
-function drawCatalogLayers(map: MapLibreMap, { catalog, mode, showJourneyRoute, labelled }: DrawOptions) {
+function drawCatalogLayers(map: MapLibreMap, { catalog, mode, showJourneyRoute }: DrawOptions) {
 	const accent = readToken('--color-accent', '#e2620b');
 	const ink = readToken('--color-ink', '#0a0a0a');
 	const surface = readToken('--color-surface', '#ffffff');
@@ -234,7 +177,7 @@ function drawCatalogLayers(map: MapLibreMap, { catalog, mode, showJourneyRoute, 
 			type: 'line',
 			source: 'selected-route',
 			layout: { 'line-cap': 'round', 'line-join': 'round' },
-			paint: { 'line-color': surface, 'line-width': 9, 'line-opacity': 0.9 },
+			paint: { 'line-color': surface, 'line-width': 10, 'line-opacity': 0.95 },
 		});
 		map.addLayer({
 			id: 'selected-route-line',
@@ -274,28 +217,6 @@ function drawCatalogLayers(map: MapLibreMap, { catalog, mode, showJourneyRoute, 
 		source: 'transit-stops',
 		paint: { 'circle-color': accent, 'circle-radius': 3 },
 	});
-
-	/**
-	 * Symbol layers need glyphs from the basemap style; skip them entirely on the
-	 * offline fallback rather than letting MapLibre fail to render the label.
-	 */
-	if (labelled) {
-		map.addLayer({
-			id: 'transit-stop-labels',
-			type: 'symbol',
-			source: 'transit-stops',
-			minzoom: 14,
-			layout: {
-				'text-field': ['get', 'name'],
-				'text-font': ['Noto Sans Regular'],
-				'text-size': 11,
-				'text-offset': [0, 1.15],
-				'text-anchor': 'top',
-				'text-allow-overlap': false,
-			},
-			paint: { 'text-color': ink, 'text-halo-color': surface, 'text-halo-width': 2 },
-		});
-	}
 
 	map.on('mouseenter', 'transit-stops', () => {
 		map.getCanvas().style.cursor = 'pointer';
@@ -384,6 +305,10 @@ function drawCatalogLayers(map: MapLibreMap, { catalog, mode, showJourneyRoute, 
 
 	const coordinates = mode === 'traffic' ? catalog.traffic.flatMap((event) => event.geometry) : routeCoordinates;
 
+	/**
+	 * With nothing to frame — no itinerary searched yet — the map simply stays on
+	 * Limoges rather than zooming somewhere arbitrary.
+	 */
 	if (coordinates.length) {
 		const bounds = coordinates.reduce(
 			(current, position) => current.extend([position[0]!, position[1]!]),

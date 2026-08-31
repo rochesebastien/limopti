@@ -51,7 +51,21 @@ export default function JourneyPlanner({ catalog }: PageProps) {
 
 						<JourneySearchForm catalog={catalog} />
 
-						{catalog.journeys.length ? (
+						{!catalog.search.hasSearch ? (
+							<div className="space-y-3">
+								<p className="text-muted text-xs leading-5">
+									Indiquez un départ et une destination pour afficher un itinéraire. La carte montre Limoges en
+									attendant.
+								</p>
+								<Button
+									intent="secondary"
+									size="small"
+									onClick={() => router.get('/', { from: 'Pl. W. Churchill', to: 'Gare des Bénédictins' })}
+								>
+									Essayer Churchill → Gare
+								</Button>
+							</div>
+						) : catalog.journeys.length ? (
 							<section aria-label="Itinéraires proposés" className="space-y-2.5">
 								<div className="flex items-center justify-between gap-3">
 									<p className="text-muted text-xs tabular-nums">

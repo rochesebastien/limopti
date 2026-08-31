@@ -19,7 +19,7 @@ FROM dependencies AS builder
 COPY . .
 
 ARG VITE_APP_NAME=Limopti
-ARG VITE_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/positron
+ARG VITE_MAP_TILES_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 
 ENV NODE_ENV=production \
 	PORT=3333 \
@@ -30,7 +30,7 @@ ENV NODE_ENV=production \
 	DATABASE_URL=postgres://app:app@localhost:5432/limopti \
 	SESSION_DRIVER=cookie \
 	VITE_APP_NAME=${VITE_APP_NAME} \
-	VITE_MAP_STYLE_URL=${VITE_MAP_STYLE_URL}
+	VITE_MAP_TILES_URL=${VITE_MAP_TILES_URL}
 
 RUN yarn workspace @limopti/web build
 

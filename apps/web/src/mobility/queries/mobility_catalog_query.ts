@@ -97,6 +97,11 @@ export interface MobilityCatalogProjection {
 		origin: string;
 		destination: string;
 		departureAt: string;
+		/**
+		 * False as long as the visitor has not filled both ends of the trip. The
+		 * map then simply shows Limoges instead of an itinerary.
+		 */
+		hasSearch: boolean;
 		isSupported: boolean;
 	};
 	places: PlaceProjection[];
@@ -428,10 +433,12 @@ const sources: MobilitySourceProjection[] = [
 
 export class MobilityCatalogQuery {
 	execute(input: MobilityCatalogInput = {}): MobilityCatalogProjection {
-		const origin = input.origin?.trim() || 'Pl. W. Churchill';
-		const destination = input.destination?.trim() || 'Gare des Bénédictins';
+		const origin = input.origin?.trim() ?? '';
+		const destination = input.destination?.trim() ?? '';
 		const normalize = (value: string) => value.toLocaleLowerCase('fr').replaceAll(/\s+/g, ' ');
+		const hasSearch = Boolean(origin && destination);
 		const isSupported =
+			hasSearch &&
 			normalize(origin) === normalize('Pl. W. Churchill') &&
 			normalize(destination) === normalize('Gare des Bénédictins');
 
@@ -449,6 +456,7 @@ export class MobilityCatalogQuery {
 				origin,
 				destination,
 				departureAt: '2026-08-31T08:08:00+02:00',
+				hasSearch,
 				isSupported,
 			},
 			places,

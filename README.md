@@ -12,7 +12,8 @@ cartographiée sans masquer la fraîcheur des données.
 
 - formulaire de recherche avec un scénario reproductible Churchill → Gare ;
 - comparaison de trois options bus et marche sur ce scénario ;
-- carte MapLibre avec un tracé réel de la ligne 6 entre Churchill et la gare ;
+- carte OpenStreetMap affichant Limoges tant qu’aucun trajet n’est demandé,
+  puis le tracé réel de la ligne 6 entre Churchill et la gare ;
 - annuaire des principales lignes TCL ;
 - favoris enregistrés localement sous forme d’intention de trajet ;
 - vue dédiée aux perturbations et au trafic ;
@@ -87,9 +88,13 @@ La source transport principale est le
 Nouvelle-Aquitaine Mobilités. L’extrait de démonstration est attribué à STCLM /
 Limoges Métropole et reste soumis à l’ODbL.
 
-Le fond de carte provient d’OpenStreetMap via OpenFreeMap. Les données de trafic
-Bison Futé et les perturbations présentes dans l’interface sont actuellement
-des exemples explicitement signalés comme tels.
+Le fond de carte est constitué des tuiles raster OpenStreetMap, servies par
+défaut depuis `tile.openstreetmap.org`. Ce service public convient à une
+démonstration mais sa politique d’usage exclut un déploiement à fort trafic :
+renseignez alors `VITE_MAP_TILES_URL` avec votre propre serveur de tuiles.
+
+Les données de trafic Bison Futé et les perturbations présentes dans
+l’interface sont actuellement des exemples explicitement signalés comme tels.
 
 Consultez `/sources` dans l’application pour le détail des sources, licences,
 dates de validité et limitations.
