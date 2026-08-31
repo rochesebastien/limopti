@@ -1,3 +1,4 @@
+import { authEnabled } from '#app/features';
 import type { HttpContext } from '@adonisjs/core/http';
 import type { NextFn } from '@adonisjs/core/types/http';
 
@@ -9,7 +10,14 @@ import type { NextFn } from '@adonisjs/core/types/http';
  */
 export default class SilentAuthMiddleware {
 	async handle(ctx: HttpContext, next: NextFn) {
-		await ctx.auth.check();
+		/**
+		 * While the account area is switched off there is nobody to resolve, and
+		 * skipping the lookup keeps the open-access application free of any
+		 * database round-trip.
+		 */
+		if (authEnabled) {
+			await ctx.auth.check();
+		}
 
 		return next();
 	}

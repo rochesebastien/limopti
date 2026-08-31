@@ -22,6 +22,13 @@ const env = await Env.create(new URL('../', import.meta.url), {
 	APP_KEY: Env.schema.secret(),
 	APP_URL: Env.schema.string({ format: 'url', tld: false }),
 
+	/**
+	 * Temporarily switches the account area off so the whole application is
+	 * reachable without signing in. Flip it back to true to restore login,
+	 * signup and the account page.
+	 */
+	AUTH_ENABLED: Env.schema.boolean.optional(),
+
 	// Database
 	DATABASE_URL: Env.schema.secret(),
 

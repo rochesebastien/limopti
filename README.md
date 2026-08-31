@@ -12,12 +12,14 @@ cartographiée sans masquer la fraîcheur des données.
 
 - formulaire de recherche avec un scénario reproductible Churchill → Gare ;
 - comparaison de trois options bus et marche sur ce scénario ;
-- carte MapLibre avec un tracé réel de la ligne 6 entre Churchill et la gare ;
+- carte OpenStreetMap affichant Limoges tant qu’aucun trajet n’est demandé,
+  puis le tracé réel de la ligne 6 entre Churchill et la gare ;
 - annuaire des principales lignes TCL ;
 - favoris enregistrés localement sous forme d’intention de trajet ;
 - vue dédiée aux perturbations et au trafic ;
 - page Sources détaillant licences, validité et limites de chaque donnée ;
-- authentification Adonis prête pour la synchronisation future des favoris.
+- authentification Adonis prête pour la synchronisation future des favoris,
+  actuellement désactivée : l’application est en accès libre.
 
 ## Stack
 
@@ -50,10 +52,17 @@ yarn dev
 L’application est servie sur <http://localhost:3333> et Storybook sur
 <http://localhost:6006> avec `yarn storybook`.
 
-Le planificateur public fonctionne en mode démonstration sans base. PostgreSQL
-est nécessaire pour les écrans d’inscription, de connexion et de compte.
+Le planificateur public fonctionne en mode démonstration sans base.
 Les recherches hors du scénario Churchill → Gare affichent volontairement un
 état non pris en charge : le moteur de calcul GTFS/OTP reste à brancher.
+
+### Accès libre
+
+`AUTH_ENABLED=false` (valeur par défaut) place l’application en accès libre :
+toutes les pages sont consultables sans compte, les écrans de connexion,
+d’inscription et de compte redirigent vers l’accueil, et aucune requête base de
+données n’est émise. Le code d’identité reste intact ; repasser la variable à
+`true` (avec PostgreSQL disponible) restaure la connexion.
 
 ## Déploiement
 
@@ -79,9 +88,13 @@ La source transport principale est le
 Nouvelle-Aquitaine Mobilités. L’extrait de démonstration est attribué à STCLM /
 Limoges Métropole et reste soumis à l’ODbL.
 
-Le fond de carte provient d’OpenStreetMap via OpenFreeMap. Les données de trafic
-Bison Futé et les perturbations présentes dans l’interface sont actuellement
-des exemples explicitement signalés comme tels.
+Le fond de carte est constitué des tuiles raster OpenStreetMap, servies par
+défaut depuis `tile.openstreetmap.org`. Ce service public convient à une
+démonstration mais sa politique d’usage exclut un déploiement à fort trafic :
+renseignez alors `VITE_MAP_TILES_URL` avec votre propre serveur de tuiles.
+
+Les données de trafic Bison Futé et les perturbations présentes dans
+l’interface sont actuellement des exemples explicitement signalés comme tels.
 
 Consultez `/sources` dans l’application pour le détail des sources, licences,
 dates de validité et limitations.

@@ -3,9 +3,9 @@ import { type ReactNode } from 'react';
 import { tv } from 'tailwind-variants';
 import { Input, type InputProps } from '../../atoms/input/input';
 
-const fieldRoot = tv({ base: 'space-y-2' });
-const fieldLabel = tv({ base: 'text-ink block text-sm font-semibold' });
-const fieldError = tv({ base: 'text-rose block text-sm' });
+const fieldRoot = tv({ base: 'space-y-1.5' });
+const fieldLabel = tv({ base: 'text-ink-soft block text-[0.8125rem] font-medium' });
+const fieldError = tv({ base: 'text-critical block text-[0.8125rem]' });
 
 export interface FieldProps extends InputProps {
 	label: ReactNode;

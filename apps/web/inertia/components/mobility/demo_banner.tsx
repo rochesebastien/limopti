@@ -1,21 +1,17 @@
-import { FlaskConical } from 'lucide-react';
+import { Link } from '@adonisjs/inertia/react';
 
-export function DemoBanner({ compact = false }: { compact?: boolean }) {
+/**
+ * Single, discreet reminder that the data is theoretical. It stays one line so
+ * it can sit on any page without competing with the content.
+ */
+export function DemoBanner({ className = '' }: { className?: string }) {
 	return (
-		<output
-			className={`border-warning/20 bg-warning-soft text-warning flex items-start gap-2.5 border font-semibold ${
-				compact ? 'rounded-xl px-3 py-2 text-xs' : 'rounded-2xl px-4 py-3 text-sm'
-			}`}
-		>
-			<FlaskConical className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-			<span>
-				Version de démonstration · horaires théoriques
-				{compact ? null : (
-					<span className="text-muted mt-0.5 block font-normal">
-						Aucune position de bus ou perturbation temps réel n’est encore publiée dans Limopti.
-					</span>
-				)}
-			</span>
-		</output>
+		<p className={`text-muted flex items-center gap-1.5 text-xs ${className}`}>
+			<span className="bg-warning size-1.5 shrink-0 rounded-full" aria-hidden="true" />
+			Horaires théoriques, pas de temps réel.
+			<Link route="sources.index" className="text-ink underline underline-offset-2 hover:no-underline">
+				Sources
+			</Link>
+		</p>
 	);
 }

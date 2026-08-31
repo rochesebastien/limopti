@@ -3,12 +3,12 @@ import { type ComponentPropsWithRef } from 'react';
 import { tv, type VariantProps } from 'tailwind-variants';
 
 const input = tv({
-	base: 'border-border bg-surface text-ink placeholder:text-muted/70 focus:border-accent focus:ring-accent/20 data-[invalid]:border-rose data-[invalid]:focus:border-rose data-[invalid]:focus:ring-rose/20 rounded-control block w-full border transition-shadow outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50',
+	base: 'border-border bg-surface text-ink placeholder:text-faint focus:border-ink data-[invalid]:border-critical data-[invalid]:focus:border-critical rounded-control block w-full border transition-colors outline-none disabled:cursor-not-allowed disabled:opacity-40',
 	variants: {
 		inputSize: {
-			small: 'h-9 px-3 text-sm',
-			medium: 'h-11 px-3.5 text-sm',
-			large: 'h-12 px-4 text-base',
+			small: 'h-8 px-2.5 text-[0.8125rem]',
+			medium: 'h-9 px-3 text-sm',
+			large: 'h-11 px-3.5 text-sm',
 		},
 	},
 	defaultVariants: {

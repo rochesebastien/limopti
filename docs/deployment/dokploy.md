@@ -68,7 +68,7 @@ déjà ces valeurs publiques par défaut :
 
 ```dotenv
 VITE_APP_NAME=Limopti
-VITE_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/positron
+VITE_MAP_TILES_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 ```
 
 Dans Dokploy, renseignez-les dans **Build Time Arguments**, pas dans les secrets
@@ -154,4 +154,6 @@ Testez aussi une restauration avant de considérer la sauvegarde comme fiable.
 - **Connexion impossible** : vérifiez que la migration `create_users_table`
   est passée et que l’URL PostgreSQL est l’URL interne.
 - **Carte vide** : le reste de l’application doit fonctionner ; vérifiez
-  l’accès du navigateur à OpenFreeMap et les erreurs réseau côté client.
+  l’accès du navigateur à `tile.openstreetmap.org` et les erreurs réseau côté
+  client. Le service public d’OpenStreetMap convient à une démonstration ;
+  au-delà, renseignez `VITE_MAP_TILES_URL` avec votre propre serveur de tuiles.

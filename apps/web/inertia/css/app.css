@@ -8,18 +8,43 @@
 	.maplibregl-popup-content {
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-control);
+		background: var(--color-surface);
 		box-shadow: var(--shadow-card);
 	}
 
 	.maplibregl-ctrl-group button {
-		width: 2.25rem;
-		height: 2.25rem;
+		width: 2rem;
+		height: 2rem;
+		background: transparent;
+	}
+
+	.maplibregl-ctrl-group button + button {
+		border-top: 1px solid var(--color-border);
+	}
+
+	/* The control glyphs ship as dark SVGs; invert them for the dark scheme. */
+	@media (prefers-color-scheme: dark) {
+		.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+			filter: invert(1);
+		}
 	}
 
 	.maplibregl-popup-content {
-		padding: 0.625rem 0.75rem;
+		padding: 0.5rem 0.625rem;
 		color: var(--color-ink);
 		font-size: 0.75rem;
-		font-weight: 700;
+	}
+
+	.maplibregl-popup-tip {
+		display: none;
+	}
+
+	.maplibregl-ctrl-attrib.maplibregl-compact {
+		background: var(--color-surface);
+		border-radius: var(--radius-control);
+	}
+
+	.maplibregl-ctrl-attrib a {
+		color: var(--color-muted);
 	}
 }

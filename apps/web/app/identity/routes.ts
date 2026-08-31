@@ -13,11 +13,11 @@ router
 		router.get('login', [LoginController, 'render']).as('session.create');
 		router.post('login', [LoginController, 'execute']).as('session.store');
 	})
-	.use(middleware.guest());
+	.use([middleware.authFeature(), middleware.guest()]);
 
 router
 	.group(() => {
 		router.get('account', [AccountController, 'render']).as('account.show');
 		router.post('logout', [LogoutController, 'execute']).as('session.destroy');
 	})
-	.use(middleware.auth());
+	.use([middleware.authFeature(), middleware.auth()]);

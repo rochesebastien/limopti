@@ -9,26 +9,20 @@ export default function Signup() {
 		<>
 			<Head title="Créer un compte" />
 			<AuthShell
-				eyebrow="Votre mobilité, à votre façon"
-				title="Épinglez les trajets qui comptent."
-				description="Créez votre compte Limopti pour retrouver bientôt vos favoris et alertes sur tous vos appareils."
+				title="Créer un compte"
+				description="Quelques informations suffisent pour commencer."
 				footer={
 					<>
 						Vous avez déjà un compte ?{' '}
-						<Link route="session.create" className="text-accent hover:text-accent-hover font-semibold">
+						<Link route="session.create" className="text-ink underline underline-offset-2 hover:no-underline">
 							Se connecter
 						</Link>
 					</>
 				}
 			>
-				<div className="mb-7">
-					<h2 className="text-ink text-2xl font-bold tracking-tight">Créer mon compte</h2>
-					<p className="text-muted mt-2 text-sm">Quelques informations suffisent pour commencer.</p>
-				</div>
-
 				<Form route="new_account.store">
 					{({ errors, processing }) => (
-						<div className="space-y-5">
+						<div className="space-y-4">
 							<Field label="Nom" error={errors.name} type="text" name="name" autoComplete="name" required />
 
 							<Field label="Email" error={errors.email} type="email" name="email" autoComplete="email" required />
